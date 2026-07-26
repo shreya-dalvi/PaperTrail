@@ -58,7 +58,7 @@ with col_c:
     st.subheader("Leak Mechanism Breakdown")
     mech = pd.Series(analysis["mechanism_breakdown"]).sort_values()
     st.bar_chart(mech)
-    st.caption("Based on keyword matching in incident notes — many cases remain 'Unspecified' where the mechanism wasn't clearly stated.")
+    st.caption("Based on keyword matching in incident notes, many cases remain 'Unspecified' where the mechanism wasn't clearly stated.")
 
 with col_d:
     st.subheader("Top Conducting Bodies")
