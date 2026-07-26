@@ -1,12 +1,23 @@
 import os
-import re
+import streamlit as st
 import pandas as pd
 from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from statsmodels.tsa.arima.model import ARIMA
 
-load_dotenv()
-engine = create_engine(os.getenv('DATABASE_URL'))
+load_dotenv()  # <-- this line must be here, before get_secret is used
+
+def get_secret(key):
+    if key in os.environ:
+        return os.environ[key]
+    try:
+        if hasattr(st, "secrets") and key in st.secrets:
+            return st.secrets[key]
+    except Exception:
+        pass
+    return None
+
+engine = create_engine(get_secret('DATABASE_URL'))
 
 MECHANISM_KEYWORDS = {
     "Impersonation/Solver": ["impersonat", "solver", "proxy", "stand-in"],

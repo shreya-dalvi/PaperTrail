@@ -9,12 +9,21 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src', 'agents'))
 from analyst_agent import run_analysis
 
 load_dotenv()
-engine = create_engine(os.getenv('DATABASE_URL'))
 
-st.set_page_config(page_title="PaperTrail — India Exam Paper Leak Tracker", layout="wide")
+def get_secret(key):
+    if key in os.environ:
+        return os.environ[key]
+    if hasattr(st, "secrets") and key in st.secrets:
+        return st.secrets[key]
+    return None
+
+engine = create_engine(get_secret('DATABASE_URL'))
+
+st.set_page_config(page_title="PaperTrail: India Exam Paper Leak Tracker", layout="wide")
 st.title("📋 PaperTrail")
 st.caption("Autonomous tracking and analysis of exam paper leak incidents in India (2004–2026)")
 st.caption(f"Data last refreshed: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')} (cached hourly)")
+
 if st.button("🔄 Refresh data now"):
     st.cache_data.clear()
     st.rerun()
@@ -44,15 +53,22 @@ st.subheader("Incidents per Year")
 yearly = pd.Series(analysis["yearly_counts"]).sort_index()
 st.bar_chart(yearly)
 
-# Top states
+# Top states & policy comparison
 col_a, col_b = st.columns(2)
 with col_a:
     st.subheader("Top States by Incidents")
     states = pd.Series(analysis["top_states"]).sort_values()
     st.bar_chart(states)
 
+with col_b:
+    st.subheader("2024 Act — Before vs After")
+    comp = pd.DataFrame(analysis["policy_comparison"])
+    st.dataframe(comp)
+    st.caption(analysis["post_act_sample_size_note"])
+
 st.divider()
 
+# Mechanism breakdown & conducting bodies
 col_c, col_d = st.columns(2)
 with col_c:
     st.subheader("Leak Mechanism Breakdown")
@@ -67,6 +83,7 @@ with col_d:
 
 st.divider()
 
+# Impact scale & era comparison
 col_e, col_f = st.columns(2)
 with col_e:
     st.subheader("Highest-Impact Incidents (by Aspirants Affected)")
@@ -77,13 +94,7 @@ with col_f:
     st.subheader("Era Comparison: UPA vs NDA")
     era_df = pd.DataFrame(analysis["era_comparison"]).T
     st.dataframe(era_df, use_container_width=True)
-    st.caption("Normalized by years in office — a more balanced comparison than the 2024 Act analysis, though rising reporting/media attention over time may also contribute to the difference.")
-
-with col_b:
-    st.subheader("2024 Act — Before vs After")
-    comp = pd.DataFrame(analysis["policy_comparison"])
-    st.dataframe(comp)
-    st.caption(analysis["post_act_sample_size_note"])
+    st.caption("Normalized by years in office, a more balanced comparison than the 2024 Act analysis, though rising reporting/media attention over time may also contribute to the difference.")
 
 st.divider()
 
@@ -95,7 +106,7 @@ auto_df = df[df['confidence'] == 'Auto-Detected'][
 if len(auto_df) > 0:
     st.dataframe(auto_df, use_container_width=True)
 else:
-    st.info("No auto-detected incidents yet — the Research Agent runs daily via GitHub Actions.")
+    st.info("No auto-detected incidents yet, the Research Agent runs daily via GitHub Actions.")
 
 st.divider()
 
