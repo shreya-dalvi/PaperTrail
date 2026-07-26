@@ -15,11 +15,15 @@ Data:
 
 Write a report with these sections:
 1. **Overview** — total incidents tracked, and the overall trend
-2. **State-wise Hotspots** — which states show the most incidents, and any plausible context
-3. **Policy Impact: The 2024 Public Examinations Act** — present the before/after numbers honestly, including the sample-size caveat provided in the data. Do NOT overstate causality — explicitly note that the drop in confirmed-rate could reflect either fewer verified leaks or more incidents still under investigation.
-4. **Outlook** — the forecast numbers, framed as a directional estimate, not a precise prediction.
+2. **State-wise Hotspots** — which states show the most incidents
+3. **Leak Mechanisms** — the breakdown of how leaks occurred, noting many cases are unspecified due to limited source detail
+4. **Conducting Bodies** — which exam bodies appear most often
+5. **Scale of Impact** — highlight the top 2-3 highest-impact incidents by aspirants affected
+6. **UPA vs NDA Era Comparison** — present the average incidents/year for each era, normalized by years, and note that rising media/reporting attention over time could also explain part of the difference, not just underlying leak frequency
+7. **Policy Impact: The 2024 Public Examinations Act** — present the before/after numbers honestly, including the sample-size caveat. Do NOT overstate causality.
+8. **Outlook** — the forecast numbers, framed as a directional estimate.
 
-Keep it factual, concise (under 400 words), and avoid sensationalism. Do not invent any numbers not present in the data.
+Keep it factual, concise (under 550 words), and avoid sensationalism. Do not invent any numbers not present in the data.
 """
 
 def generate_report():
