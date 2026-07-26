@@ -1,5 +1,6 @@
 import os
 import uuid
+from datetime import datetime
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
 from news_scraper import fetch_news, fetch_article_text
@@ -7,6 +8,18 @@ from extractor import extract_incident
 
 load_dotenv()
 engine = create_engine(os.getenv('DATABASE_URL'))
+
+def compute_era(date_str):
+    if not date_str:
+        return None
+    try:
+        d = datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError:
+        return None
+    if d >= datetime(2014, 5, 1):
+        return "NDA (May2014-now)"
+    else:
+        return "UPA (2004-May2014)"
 
 def get_existing_urls():
     with engine.connect() as conn:
@@ -20,7 +33,7 @@ def run_research_agent():
 
     for article in articles:
         if article["link"] in existing_urls:
-            continue  # already have this one, skip
+            continue
 
         article["full_text"] = fetch_article_text(article["link"])
         data = extract_incident(article)
@@ -28,25 +41,27 @@ def run_research_agent():
         if not data or not data.get("is_paper_leak"):
             continue
 
-        # skip if extraction is too thin to be useful
         useful_fields = [data.get("exam_name"), data.get("state"), data.get("conducting_body")]
         if all(f is None for f in useful_fields):
             continue
 
+        era = compute_era(data.get("date"))
+
         with engine.connect() as conn:
             conn.execute(text("""
                 INSERT INTO incidents (
-                    incident_id, incident_date, exam_name, conducting_body,
+                    incident_id, incident_date, era, exam_name, conducting_body,
                     area, state_clean, leak_status, action_taken, note,
                     source_name, source_url, confidence, detected_at
                 ) VALUES (
-                    :incident_id, :incident_date, :exam_name, :conducting_body,
+                    :incident_id, :incident_date, :era, :exam_name, :conducting_body,
                     :area, :state_clean, :leak_status, :action_taken, :note,
                     :source_name, :source_url, :confidence, now()
                 )
             """), {
                 "incident_id": f"PL-AUTO-{uuid.uuid4().hex[:8]}",
                 "incident_date": data.get("date"),
+                "era": era,
                 "exam_name": data.get("exam_name"),
                 "conducting_body": data.get("conducting_body"),
                 "area": data.get("state"),
