@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+feedparser
+groq
+python-dotenv
+sqlalchemy
+psycopg2-binary
