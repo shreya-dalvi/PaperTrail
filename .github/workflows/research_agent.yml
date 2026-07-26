@@ -1,0 +1,27 @@
+name: Research Agent Daily Run
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # runs daily at 3:00 AM UTC (~8:30 AM IST)
+  workflow_dispatch:  # lets you trigger it manually from GitHub's UI too
+
+jobs:
+  run-research-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run research agent
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+        run: python src/agents/research_agent.py
