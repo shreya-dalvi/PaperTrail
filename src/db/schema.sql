@@ -1,0 +1,22 @@
+CREATE TABLE incidents (
+    incident_id TEXT PRIMARY KEY,
+    incident_date DATE,
+    era TEXT,
+    exam_name TEXT,
+    conducting_body TEXT,
+    body_type TEXT,
+    area TEXT,
+    state_clean TEXT,
+    leak_status TEXT,
+    action_taken TEXT,
+    note TEXT,
+    arrests NUMERIC,
+    convictions NUMERIC,
+    aspirants_affected NUMERIC,
+    linked_deaths NUMERIC,
+    deaths_note TEXT,
+    source_name TEXT,
+    source_url TEXT,
+    confidence TEXT,
+    detected_at TIMESTAMP DEFAULT now()
+);
