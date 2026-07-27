@@ -36,11 +36,11 @@ News is picked up daily by the Research Agent, which uses an LLM to extract stru
 
 ## Tech Stack
 
-**Data and Analysis:** Python, pandas, statsmodels
-**Database:** PostgreSQL (Supabase)
-**AI and LLM:** Groq (Llama 3.3)
-**Automation:** GitHub Actions (scheduled daily agent runs)
-**Dashboard:** Streamlit
+**Data and Analysis:** Python, pandas, statsmodels <br>
+**Database:** PostgreSQL (Supabase) <br>
+**AI and LLM:** Groq (Llama 3.3) <br>
+**Automation:** GitHub Actions (scheduled daily agent runs) <br>
+**Dashboard:** Streamlit <br>
 **Dataset:** [India Paper Leaks 2004-2026 (Kaggle)](https://www.kaggle.com/datasets/sujaynadkarni/india-paper-leaks-from-2004-to-2026)
 
 ## Live Demo
