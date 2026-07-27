@@ -19,7 +19,7 @@ def get_secret(key):
 
 engine = create_engine(get_secret('DATABASE_URL'))
 
-st.set_page_config(page_title="PaperTrail: India Exam Paper Leak Tracker", layout="wide")
+st.set_page_config(page_title="PaperTrail — India Exam Paper Leak Tracker", layout="wide")
 st.title("📋 PaperTrail")
 st.caption("Autonomous tracking and analysis of exam paper leak incidents in India (2004–2026)")
 st.caption(f"Data last refreshed: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M')} (cached hourly)")
@@ -39,6 +39,28 @@ def load_data():
 
 df = load_data()
 analysis = run_analysis()
+
+# Sidebar filters
+st.sidebar.header("Filters")
+selected_states = st.sidebar.multiselect(
+    "Filter by state",
+    options=sorted(df['state_clean'].unique()),
+    default=[]
+)
+year_range = st.sidebar.slider(
+    "Filter by year range",
+    min_value=int(df['incident_date'].dt.year.min()),
+    max_value=int(df['incident_date'].dt.year.max()),
+    value=(int(df['incident_date'].dt.year.min()), int(df['incident_date'].dt.year.max()))
+)
+
+filtered_df = df.copy()
+if selected_states:
+    filtered_df = filtered_df[filtered_df['state_clean'].isin(selected_states)]
+filtered_df = filtered_df[
+    (filtered_df['incident_date'].dt.year >= year_range[0]) &
+    (filtered_df['incident_date'].dt.year <= year_range[1])
+]
 
 # Top metrics
 col1, col2, col3 = st.columns(3)
@@ -74,7 +96,7 @@ with col_c:
     st.subheader("Leak Mechanism Breakdown")
     mech = pd.Series(analysis["mechanism_breakdown"]).sort_values()
     st.bar_chart(mech)
-    st.caption("Based on keyword matching in incident notes, many cases remain 'Unspecified' where the mechanism wasn't clearly stated.")
+    st.caption("Based on keyword matching in incident notes — many cases remain 'Unspecified' where the mechanism wasn't clearly stated.")
 
 with col_d:
     st.subheader("Top Conducting Bodies")
@@ -94,7 +116,7 @@ with col_f:
     st.subheader("Era Comparison: UPA vs NDA")
     era_df = pd.DataFrame(analysis["era_comparison"]).T
     st.dataframe(era_df, use_container_width=True)
-    st.caption("Normalized by years in office, a more balanced comparison than the 2024 Act analysis, though rising reporting/media attention over time may also contribute to the difference.")
+    st.caption("Normalized by years in office — a more balanced comparison than the 2024 Act analysis, though rising reporting/media attention over time may also contribute to the difference.")
 
 st.divider()
 
@@ -106,14 +128,15 @@ auto_df = df[df['confidence'] == 'Auto-Detected'][
 if len(auto_df) > 0:
     st.dataframe(auto_df, use_container_width=True)
 else:
-    st.info("No auto-detected incidents yet, the Research Agent runs daily via GitHub Actions.")
+    st.info("No auto-detected incidents yet — the Research Agent runs daily via GitHub Actions.")
 
 st.divider()
 
-# Full incident table
+# Full incident table (filtered by sidebar selections)
 st.subheader("Full Incident Log")
+st.caption(f"Showing {len(filtered_df)} of {len(df)} incidents based on sidebar filters")
 st.dataframe(
-    df[['incident_id', 'incident_date', 'exam_name', 'state_clean', 'leak_status', 'action_taken', 'source_name']],
+    filtered_df[['incident_id', 'incident_date', 'exam_name', 'state_clean', 'leak_status', 'action_taken', 'source_name']],
     use_container_width=True
 )
 
