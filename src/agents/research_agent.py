@@ -3,8 +3,8 @@ import uuid
 from datetime import datetime
 from sqlalchemy import create_engine, text
 from dotenv import load_dotenv
-from news_scraper import fetch_news, fetch_article_text
-from extractor import extract_incident
+from src.agents.news_scraper import fetch_news, fetch_article_text
+from src.agents.extractor import extract_incident
 
 load_dotenv()
 engine = create_engine(os.getenv('DATABASE_URL'))

@@ -1,8 +1,8 @@
-name: Research Agent Daily Run
+name: Research Agent Weekly Run
 
 on:
   schedule:
-    - cron: '0 3 * * *'  # runs daily at 3:00 AM UTC (~8:30 AM IST)
+    - cron: '0 3 * * 1'  # runs weekly, Monday 3:00 AM UTC (~8:30 AM IST)
   workflow_dispatch:  # lets you trigger it manually from GitHub's UI too
 
 jobs:
@@ -20,8 +20,29 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements-agent.txt
 
+      - name: Verify Groq model is still live
+        env:
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+        run: |
+          python -c "
+          import os, requests, sys
+          model = os.environ['GROQ_MODEL']
+          resp = requests.get(
+              'https://api.groq.com/openai/v1/models',
+              headers={'Authorization': f'Bearer {os.environ[\"GROQ_API_KEY\"]}'}
+          )
+          live_ids = [m['id'] for m in resp.json().get('data', [])]
+          if model not in live_ids:
+              print(f'::error::GROQ_MODEL={model} is not in the live model list. Update it in repo Variables.')
+              sys.exit(1)
+          print(f'{model} confirmed live.')
+          "
+
       - name: Run research agent
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+          GROQ_MODEL: ${{ vars.GROQ_MODEL }}
+          GROQ_FALLBACK_MODEL: ${{ vars.GROQ_FALLBACK_MODEL }}
         run: python src/agents/research_agent.py

@@ -1,12 +1,11 @@
 import os
 import json
 from datetime import date
-from groq import Groq
 from dotenv import load_dotenv
-from analyst_agent import run_analysis
+from src.agents.groq_client import call_groq
+from src.agents.analyst_agent import run_analysis
 
 load_dotenv()
-client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
 REPORT_PROMPT = """You are writing a short, honest policy-brief style report about exam paper leak incidents in India, based on the structured data below.
 
@@ -30,8 +29,7 @@ def generate_report():
     data = run_analysis()
     prompt = REPORT_PROMPT.format(data=json.dumps(data, indent=2, default=str))
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+    response = call_groq(
         messages=[{"role": "user", "content": prompt}]
     )
     report_text = response.choices[0].message.content.strip()

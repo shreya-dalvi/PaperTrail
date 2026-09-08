@@ -1,10 +1,9 @@
 import os
 import json
-from groq import Groq
 from dotenv import load_dotenv
+from src.agents.groq_client import call_groq
 
 load_dotenv()
-client = Groq(api_key=os.getenv('GROQ_API_KEY'))
 
 EXTRACTION_PROMPT = """You are extracting structured data about an Indian exam paper leak incident from a news article.
 
@@ -35,12 +34,18 @@ def extract_incident(article):
         content=content,
         published_date=published_date
     )
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
+    response = call_groq(
         messages=[{"role": "user", "content": prompt}]
     )
     text = response.choices[0].message.content.strip()
-    text = text.strip("```json").strip("```").strip()
+
+    # Strip markdown code fences safely (substring-based, not char-strip)
+    if text.startswith("```"):
+        text = text.split("```")[1]
+        if text.startswith("json"):
+            text = text[4:]
+    text = text.strip()
+
     try:
         result = json.loads(text)
     except json.JSONDecodeError:
